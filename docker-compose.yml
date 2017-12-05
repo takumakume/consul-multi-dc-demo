@@ -1,0 +1,181 @@
+version: '2'
+services:
+
+  #
+  # DC-A
+  #
+
+  # DC-A consul servers
+
+  consul-server-a-1:
+    container_name: 'consul-server-a-1'
+    build:
+      context: consul-server
+    command: 'agent -server -bootstrap-expect=3 -ui -client=0.0.0.0 -node=consul-server-a-1 -log-level=debug'
+    ports:
+      - '18300:8300'
+      - '18301:8301'
+      - '18302:8302'
+      - '18400:8400'
+      - '18500:8500'
+      - '18600:53/udp'
+    networks:
+      consul-network:
+        ipv4_address: 10.10.11.111
+
+  consul-server-a-2:
+    container_name: 'consul-server-a-2'
+    build:
+      context: consul-server
+    command: 'agent -server -retry-join consul-server-a-1 -node=consul-server-a-2 -log-level=debug'
+    depends_on:
+      - consul-server-a-1
+    networks:
+      consul-network:
+        ipv4_address: 10.10.11.112
+
+  consul-server-a-3:
+    container_name: 'consul-server-a-3'
+    build:
+      context: consul-server
+    command: 'agent -server -retry-join consul-server-a-1 -node=consul-server-a-3 -log-level=debug'
+    depends_on:
+      - consul-server-a-1
+    networks:
+      consul-network:
+        ipv4_address: 10.10.11.113
+
+  # DC-A reverse proxy servers
+
+  proxy-server-1:
+    container_name: 'proxy-server-1'
+    environment:
+      NAME: 'proxy-server-1'
+      IPADDRESS: '10.10.11.121'
+    build:
+      context: proxy-server
+    ports:
+      - '8081:80'
+    networks:
+      consul-network:
+        ipv4_address: 10.10.11.121
+
+  proxy-server-2:
+    container_name: 'proxy-server-2'
+    environment:
+      NAME: 'proxy-server-2'
+      IPADDRESS: '10.10.11.122'
+    build:
+      context: proxy-server
+    ports:
+      - '8082:80'
+    networks:
+      consul-network:
+        ipv4_address: 10.10.11.122
+
+  proxy-server-3:
+    container_name: 'proxy-server-3'
+    environment:
+      NAME: 'proxy-server-3'
+      IPADDRESS: '10.10.11.123'
+    build:
+      context: proxy-server
+    ports:
+      - '8083:80'
+    networks:
+      consul-network:
+        ipv4_address: 10.10.11.123
+
+  #
+  # DC-B
+  #
+
+  # DC-B consul servers
+
+  consul-server-b-1:
+    container_name: 'consul-server-b-1'
+    build:
+      context: consul-server
+    command: 'agent -server -bootstrap-expect=3 -ui -client=0.0.0.0 -node=consul-server-b-1 -log-level=debug'
+    ports:
+      - '28300:8300'
+      - '28301:8301'
+      - '28302:8302'
+      - '28400:8400'
+      - '28500:8500'
+      - '28600:53/udp'
+    networks:
+      consul-network:
+        ipv4_address: 10.10.11.211
+
+  consul-server-b-2:
+    container_name: 'consul-server-b-2'
+    build:
+      context: consul-server
+    command: 'agent -server -retry-join consul-server-b-1 -node=consul-server-b-2 -log-level=debug'
+    depends_on:
+      - consul-server-b-1
+    networks:
+      consul-network:
+        ipv4_address: 10.10.11.212
+
+  consul-server-b-3:
+    container_name: 'consul-server-b-3'
+    build:
+      context: consul-server
+    command: 'agent -server -retry-join consul-server-b-1 -node=consul-server-b-3 -log-level=debug'
+    depends_on:
+      - consul-server-b-1
+    networks:
+      consul-network:
+        ipv4_address: 10.10.11.213
+
+  # DC-B httpd servers
+
+  web-server-1:
+    container_name: 'web-server-1'
+    environment:
+      NAME: 'web-server-1'
+      IPADDRESS: '10.10.11.221'
+    build:
+      context: web-server
+    ports:
+      - '81:80'
+    networks:
+      consul-network:
+        ipv4_address: 10.10.11.221
+
+  web-server-2:
+    container_name: 'web-server-2'
+    environment:
+      NAME: 'web-server-2'
+      IPADDRESS: '10.10.11.222'
+    build:
+      context: web-server
+    ports:
+      - '82:80'
+    networks:
+      consul-network:
+        ipv4_address: 10.10.11.222
+
+  web-server-3:
+    container_name: 'web-server-3'
+    environment:
+      NAME: 'web-server-3'
+      IPADDRESS: '10.10.11.223'
+    build:
+      context: web-server
+    ports:
+      - '83:80'
+    networks:
+      consul-network:
+        ipv4_address: 10.10.11.223
+
+networks:
+  consul-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.10.11.0/24
+          gateway: 10.10.11.1

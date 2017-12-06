@@ -56,5 +56,5 @@ RUN echo '{\n\
 CMD echo ${NAME} > /usr/local/apache2/htdocs/index.html && \
     sed -i s/__hostname__/${NAME}/g /etc/consul.d/*.json && \
     sed -i s/__ipaddress__/${IPADDRESS}/g /etc/consul.d/*.json && \
-    httpd -D BACKGROUND &&
+    httpd -D BACKGROUND && \
     consul agent -config-dir=/etc/consul.d

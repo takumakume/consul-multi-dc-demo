@@ -54,5 +54,5 @@ RUN echo '{\n\
 
 CMD sed -i s/__hostname__/${NAME}/g /etc/consul.d/*.json && \
     sed -i s/__ipaddress__/${IPADDRESS}/g /etc/consul.d/*.json && \
-    nginx -g daemon off && \
+    nginx && \
     consul agent -config-dir=/etc/consul.d
